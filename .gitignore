@@ -1,0 +1,13 @@
+.DS_Store
+build/
+backups/
+Backups/
+LidGlow-*-source.zip
+*.log
+.env
+.env.*
+*.p12
+*.p8
+*.mobileprovision
+*.key
+recovery.plist
