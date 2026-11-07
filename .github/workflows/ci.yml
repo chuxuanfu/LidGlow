@@ -1,0 +1,29 @@
+name: Build and validate
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate published artifact checksums before rebuild
+        run: cd dist && shasum -a 256 -c SHA256SUMS
+      - name: Test, build and package without launching
+        run: ./package.sh
+      - name: Validate release checksums
+        run: cd dist && shasum -a 256 -c SHA256SUMS
+      - name: Check installer interface
+        run: |
+          ./install.sh --help
+          if ./install.sh --unknown; then exit 1; fi
+      - name: Test prebuilt installer without launching (Apple Silicon runner)
+        if: runner.arch == 'ARM64'
+        run: ./test_install.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LidGlow-macos-arm64
+          path: dist/
+          if-no-files-found: error
