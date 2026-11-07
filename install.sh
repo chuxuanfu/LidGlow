@@ -1,7 +1,7 @@
 #!/bin/bash
 # Installs the published prebuilt app using only tools included with macOS.
 set -euo pipefail
-VERSION=0.2.1
+VERSION=0.2.2
 BASE="https://raw.githubusercontent.com/chuxuanfu/LidGlow/main/dist"
 DEST=/Applications
 SOURCE_APP=

@@ -17,5 +17,11 @@ if [[ "$(uname -s)" == Darwin ]]; then
     -framework AudioToolbox -framework QuartzCore -framework CoreAudio -framework ServiceManagement \
     -o "$tmp/test_app_lifecycle"
   "$tmp/test_app_lifecycle"
+  xcrun clang -fobjc-arc -fblocks -Wall -Wextra -Werror -Wno-unused-function -mmacosx-version-min=13.0 \
+    test_effects.m Hardware.m AudioMeter.m Signal.c Lifecycle.c \
+    -framework Cocoa -framework IOKit -framework ScreenCaptureKit -framework CoreMedia \
+    -framework AudioToolbox -framework QuartzCore -framework CoreAudio -framework ServiceManagement \
+    -o "$tmp/test_effects"
+  "$tmp/test_effects"
 fi
 for script in build.sh install.sh package.sh test.sh test_install.sh; do bash -n "$script"; done

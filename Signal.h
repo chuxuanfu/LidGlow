@@ -5,6 +5,9 @@
 
 double lg_clamp(double x);
 double lg_breathe(double elapsed, double period);
+/* Render Music/Auto into 1%..100% of the selected maximum; zero stays off.
+   Keep the floor out of the detector so audio activity/hysteresis stay exact. */
+double lg_music_light_level(double normalized, double maximum);
 double lg_envelope(double previous, double target, double dt);
 double lg_audio_target(double rms, double gain);
 int lg_should_write(double previous, double value);
@@ -28,7 +31,7 @@ typedef struct {
 } LGMusicState;
 
 typedef struct {
-    double level;    /* Already smoothed 0..1. Multiply only by max brightness. */
+    double level;    /* Smoothed 0..1 audio signal; the renderer supplies the light floor. */
     double rms;
     int active;      /* Immediate sound-on; 0.70-second silence-off hysteresis. */
 } LGMusicOutput;

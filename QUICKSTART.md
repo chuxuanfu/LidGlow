@@ -33,7 +33,7 @@ Use `--no-open` to install without launching. The installer fails safely if LidG
 
 ## Install from the DMG
 
-1. Download and open `LidGlow-0.2.1-macos-arm64.dmg`.
+1. Download and open `LidGlow-0.2.2-macos-arm64.dmg`.
 2. Select **Restore & Quit** in an older running LidGlow.
 3. Drag **LidGlow.app** onto **Applications**, or double-click **Install LidGlow.command** for a checked install with backup.
 4. Open LidGlow from Applications, then eject the DMG. Do not run it directly from the disk image or move it after enabling login launch.
@@ -50,6 +50,8 @@ macOS may block an unnotarized download. Inspect the source and provenance befor
 - Launch at login is optional and initially off. Enable it from the app after installing to a permanent location. macOS may ask you to approve it under Login Items.
 
 The menu-bar panel appears on launch. Breathe is the initial mode, Music follows beats, and Auto breathes in silence and follows music when it returns. Screen-off, sleep and lock pause the effect; after wake and unlock, your selected mode and settings resume. A normal quit/relaunch still starts in Breathe. Restore returns control to the system. **Restore & Quit** restores before exiting; do not force-quit during normal use.
+
+Music and Auto keep a dim glow at 1% of the selected maximum, including silence and beat troughs. Breathe keeps its existing behavior. Off and a zero maximum still turn the light off.
 
 ### If the permission switch is enabled but Music/Auto still fails
 

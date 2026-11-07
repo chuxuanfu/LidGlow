@@ -8,6 +8,10 @@ double lg_breathe(double elapsed, double period) {
     double phase = fmod(elapsed, period) / period;
     return lg_clamp((1 - cos(6.2831853071795864769 * phase)) * .5);
 }
+double lg_music_light_level(double normalized, double maximum) {
+    const double minimum_fraction = .01;
+    return lg_clamp(maximum) * (minimum_fraction + (1 - minimum_fraction) * lg_clamp(normalized));
+}
 double lg_envelope(double previous, double target, double dt) {
     previous = lg_clamp(previous); target = lg_clamp(target);
     if (!isfinite(dt) || dt <= 0) return previous;

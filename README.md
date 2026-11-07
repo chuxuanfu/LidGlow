@@ -6,7 +6,7 @@ A native macOS menu-bar app for the dedicated logo-backlight interface found on 
 
 **Apple Silicon + macOS 13 or newer + a compatible logo-backlight device. This is experimental, not a universal Mac lighting app.** Installation works without Xcode/Homebrew; hardware support is detected by the app and unsupported machines stay read-only.
 
-One command in Terminal installs the prebuilt **v0.2.1** app in `/Applications` and opens it:
+One command in Terminal installs the prebuilt **v0.2.2** app in `/Applications` and opens it:
 
 ```sh
 /bin/bash -c "$(curl --fail --location --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/chuxuanfu/LidGlow/main/install.sh)"
@@ -14,7 +14,7 @@ One command in Terminal installs the prebuilt **v0.2.1** app in `/Applications` 
 
 Read [install.sh](install.sh) before executing downloaded code. The installer verifies a SHA-256 checksum and the bundle's code signature, skips an identical installed build, preserves the previous app on upgrades, refuses to replace a running copy, and never uses sudo or disables security. A changed ad-hoc signature may need fresh native permission even if Settings still shows an enabled switch. Checksums detect corruption, not a compromised publisher; this build is **ad-hoc signed and not Apple-notarized**. A managed Mac may block it.
 
-Prefer a disk image? Download [LidGlow 0.2.1 DMG](https://github.com/chuxuanfu/LidGlow/raw/refs/heads/main/dist/LidGlow-0.2.1-macos-arm64.dmg), open it, and drag **LidGlow.app → Applications**. Alternatively, the DMG's **Install LidGlow.command** installs the bundled app and opens it. Quit an existing copy with **Restore & Quit** first. [ZIP app download](https://github.com/chuxuanfu/LidGlow/raw/refs/heads/main/dist/LidGlow-0.2.1-macos-arm64.zip) · [Checksums](dist/SHA256SUMS)
+Prefer a disk image? Download [LidGlow 0.2.2 DMG](https://github.com/chuxuanfu/LidGlow/raw/refs/heads/main/dist/LidGlow-0.2.2-macos-arm64.dmg), open it, and drag **LidGlow.app → Applications**. Alternatively, the DMG's **Install LidGlow.command** installs the bundled app and opens it. Quit an existing copy with **Restore & Quit** first. [ZIP app download](https://github.com/chuxuanfu/LidGlow/raw/refs/heads/main/dist/LidGlow-0.2.2-macos-arm64.zip) · [Checksums](dist/SHA256SUMS)
 
 1. Open **Applications → LidGlow**. It lives in the menu bar and starts in **Breathe**.
 2. For **Music** or **Auto**, select that mode and accept the app's disclosure. Grant **Screen & System Audio Recording** in macOS when asked, then reopen if macOS requires it.
@@ -24,12 +24,15 @@ Prefer a disk image? Download [LidGlow 0.2.1 DMG](https://github.com/chuxuanfu/L
 
 See [Quick Start](QUICKSTART.md) for user-only installation, upgrades, uninstall and permission troubleshooting. See [Distribution](DISTRIBUTION.md) for repeatable DMG builds and the Developer ID/notarization path.
 
+For a beginner-friendly explanation of the actual hardware calls, audio processing, safety checks and useful commands, read [How LidGlow Works](HOW-IT-WORKS.md).
+
 ## Controls
 
 - **Breathe** is selected on every launch. The previous lighting mode is never restored automatically. Maximum brightness, breathing period and beat sensitivity are remembered.
 - **Manual**, **Off**, and **Restore / System control** are also available.
-- **Music** uses system output audio to create high-contrast beat pulses. Silence fades to zero.
+- **Music** uses system output audio to create high-contrast beat pulses. Silence keeps a dim glow.
 - **Auto · Breathe + Music** breathes in silence and follows audio when sound returns. Activity hysteresis and a short crossfade avoid rapid mode switching.
+- **Music and Auto minimum:** 1% of your selected maximum, even in silence, beat troughs and crossfades. Peaks still reach the selected maximum. Breathe is unchanged. A zero maximum and Off still turn the light off. This is a requested level, not a measured physical visibility threshold.
 - **Launch at login** is optional and off until the user enables it. It uses Apple's ServiceManagement API and reports approval/error states rather than silently claiming success. Keep the app at its current location after enabling it. Login means after the user signs in, not before login.
 - **Restore & Quit** restores the complete original mapping and mode before quitting. The preview shows the requested numeric brightness, not measured physical light.
 
@@ -85,5 +88,6 @@ See `TEST-RESULTS.md` for the exact checks completed on this build. Numeric test
 - `Lifecycle.c` / `test_lifecycle.c`: sleep/display/lock coordination and resume-mode regression tests.
 - `Hardware.m`: conservative capability checks, capped writes and complete restoration.
 - `AudioMeter.m`: local ScreenCaptureKit audio analysis.
-- `Signal.c` / `test_signal.c`: portable DSP and repeatable regression tests.
+- `Signal.c` / `test_signal.c`: portable DSP, music-light floor and repeatable regression tests.
+- `test_effects.m`: production effect/mode tests with mock hardware/audio, including silence, crossfades and brightness bounds.
 - `Assets/` / `tools/generate-icon.swift`: original icon and reproducible source.

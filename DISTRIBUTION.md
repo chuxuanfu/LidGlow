@@ -2,7 +2,7 @@
 
 ## Current release
 
-`v0.2.1` ships an arm64 app for macOS 13+, a drag-to-Applications DMG with an offline installer, and a ZIP used by the one-command installer. The app's hardware support is much narrower than the OS/CPU requirement; installation does not imply a compatible illuminated logo.
+`v0.2.2` ships an arm64 app for macOS 13+, a drag-to-Applications DMG with an offline installer, and a ZIP used by the one-command installer. The app's hardware support is much narrower than the OS/CPU requirement; installation does not imply a compatible illuminated logo.
 
 The prebuilt files live in `dist/` so downloads work directly from the main branch without requiring GitHub CLI or a separate Release upload. They are small checked-in release artifacts. Build logs, test audio, historical source ZIPs, backups, personal defaults and machine-bound recovery files are excluded.
 
@@ -30,8 +30,8 @@ The selected bundle must validate and have the expected identifier. Packaging co
 Expected outputs:
 
 - `build/LidGlow.app`
-- `dist/LidGlow-0.2.1-macos-arm64.dmg`
-- `dist/LidGlow-0.2.1-macos-arm64.zip`
+- `dist/LidGlow-0.2.2-macos-arm64.dmg`
+- `dist/LidGlow-0.2.2-macos-arm64.zip`
 - `dist/SHA256SUMS`
 
 The Mach-O executable targets arm64 with minimum macOS 13. The private interface is guarded by runtime capability checks. Keep bundle ID `local.lidglow.lab` and the user recovery directory stable for upgrades. Do not add unrelated entitlements or blanket permissions: non-sandboxed system-output capture still requires native TCC consent.
@@ -49,7 +49,7 @@ SIGN_IDENTITY='Developer ID Application: YOUR NAME (TEAMID)' ./package.sh
 The optional signing path is provided but was not exercised for this release. Before distribution, use Apple's notarization service with an existing Keychain profile:
 
 ```sh
-xcrun notarytool submit dist/LidGlow-0.2.1-macos-arm64.zip --keychain-profile YOUR_PROFILE --wait
+xcrun notarytool submit dist/LidGlow-0.2.2-macos-arm64.zip --keychain-profile YOUR_PROFILE --wait
 xcrun stapler staple build/LidGlow.app
 codesign --verify --strict build/LidGlow.app
 ```
@@ -57,10 +57,10 @@ codesign --verify --strict build/LidGlow.app
 After stapling, package that exact app with `SIGN_IDENTITY=... ./package.sh --app "$PWD/build/LidGlow.app"`. Do not use the default rebuilding path. Then notarize and staple the DMG:
 
 ```sh
-xcrun notarytool submit dist/LidGlow-0.2.1-macos-arm64.dmg --keychain-profile YOUR_PROFILE --wait
-xcrun stapler staple dist/LidGlow-0.2.1-macos-arm64.dmg
+xcrun notarytool submit dist/LidGlow-0.2.2-macos-arm64.dmg --keychain-profile YOUR_PROFILE --wait
+xcrun stapler staple dist/LidGlow-0.2.2-macos-arm64.dmg
 xcrun stapler validate build/LidGlow.app
-xcrun stapler validate dist/LidGlow-0.2.1-macos-arm64.dmg
+xcrun stapler validate dist/LidGlow-0.2.2-macos-arm64.dmg
 spctl --assess --type execute --verbose build/LidGlow.app
 ```
 

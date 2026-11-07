@@ -12,6 +12,19 @@ static void legacy_checks(void) {
     assert(lg_breathe(1, NAN) == 0);
     assert(lg_breathe(-1, 4) == 0);
     assert(lg_breathe(1, 0) == 0);
+    const double caps[] = {0, .000001, .001, .05, .6, 1};
+    for (size_t c = 0; c < sizeof(caps) / sizeof(caps[0]); ++c) {
+        assert(lg_music_light_level(0, caps[c]) == .01 * caps[c]);
+        assert(lg_music_light_level(1, caps[c]) == caps[c]);
+        for (int i = -100; i <= 1100; ++i) {
+            double rendered = lg_music_light_level(i / 1000.0, caps[c]);
+            assert(rendered >= .01 * caps[c] && rendered <= caps[c]);
+        }
+    }
+    assert(lg_music_light_level(NAN, .6) == .006);
+    assert(lg_music_light_level(INFINITY, .6) == .006);
+    assert(lg_music_light_level(.5, NAN) == 0);
+    assert(lg_music_light_level(.5, INFINITY) == 0);
     assert(lg_clamp(NAN) == 0 && lg_clamp(INFINITY) == 0);
     assert(lg_clamp(-1) == 0 && lg_clamp(2) == 1);
     assert(lg_audio_target(.002, 6) == 0);
@@ -26,7 +39,7 @@ static void legacy_checks(void) {
     assert(lg_should_write(.2, .21));
     double last = .0020537446688473056;
     if (lg_should_write(last, 0)) last = 0;
-    assert(last == 0); // Regression: music silence must not leave a dim residual.
+    assert(last == 0); // Regression: explicit Off must still write exact zero through the deadband.
     srand(42);
     for (int i = 0; i < 100000; ++i) {
         double a = (double)rand() / RAND_MAX, b = (double)rand() / RAND_MAX;

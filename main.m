@@ -214,7 +214,7 @@ typedef NS_ENUM(NSInteger, LGMode) { LGSystem, LGOff, LGManual, LGBreathe, LGMus
             strongSelf->_pendingAudio = NO;
             if (error) { [strongSelf audioFailed:error.localizedDescription]; return; }
             strongSelf->_mode = desired; strongSelf->_lastTick = CACurrentMediaTime();
-            strongSelf->_state.stringValue = desired == LGAdaptive ? @"Auto: breathes in silence, follows beats when sound returns." : @"Music follows beats with adaptive contrast. Silence fades to off.";
+            strongSelf->_state.stringValue = desired == LGAdaptive ? @"Auto: breathes in silence, follows beats when sound returns." : @"Music follows beats with adaptive contrast. Silence keeps a dim glow.";
             [strongSelf tune:nil]; [strongSelf tick:nil];
         }];
     } else {
@@ -227,26 +227,37 @@ typedef NS_ENUM(NSInteger, LGMode) { LGSystem, LGOff, LGManual, LGBreathe, LGMus
     (void)sender;
     if (_mode == LGSystem || _pendingAudio || _suspended) return;
     double now = CACurrentMediaTime(), dt = fmax(0, fmin(.25, now - _lastTick)); _lastTick = now;
-    double value = 0; NSString *name = @"Off";
+    double value = 0, minimum = 0, maximum = 1; NSString *name = @"Off";
+    BOOL musicEffect = _mode == LGMusic || _mode == LGAdaptive;
     if (_mode == LGManual) { value = _brightness.doubleValue; name = @"Manual"; }
     else if (_mode == LGBreathe) { value = lg_breathe(now - _started, _period.doubleValue) * _brightness.doubleValue; name = @"Breathe"; }
-    else if (_mode == LGMusic || _mode == LGAdaptive) {
+    else if (musicEffect) {
         LGAudioSignal signal = [_audio signalForSensitivity:_gain.doubleValue];
         if (_mode == LGAdaptive) {
             _autoMusic = signal.active;
             double target = _autoMusic ? 1 : 0;
             _autoBlend += (target - _autoBlend) * (1 - exp(-dt / (_autoMusic ? .045 : .35)));
-            value = ((1 - _autoBlend) * lg_breathe(now - _started, _period.doubleValue) + _autoBlend * signal.level) * _brightness.doubleValue;
+            value = (1 - _autoBlend) * lg_breathe(now - _started, _period.doubleValue) + _autoBlend * signal.level;
             name = _autoMusic ? @"Auto · Music" : @"Auto · Breathe";
-        } else { value = signal.level * _brightness.doubleValue; name = @"Music"; }
-        if (value < .001) value = 0;
+        } else { value = signal.level; name = @"Music"; }
+        // Apply one floor after the Auto crossfade, including silence/beat troughs.
+        // It scales with the user's maximum and never changes Breathe or Off.
+        maximum = lg_clamp(_brightness.doubleValue);
+        minimum = lg_music_light_level(0, maximum);
+        value = lg_music_light_level(value, maximum);
     }
     value = lg_clamp(value);
     if (now - _lastPreview > .12) {
         _lastPreview = now; _meter.doubleValue = value;
-        _live.stringValue = [NSString stringWithFormat:@"%@   ·   Requested %.0f%%", name, value * 100];
+        NSString *percentage = musicEffect && value > 0 && value < .01 ? @"<1%" :
+            [NSString stringWithFormat:@"%.0f%%", value * 100];
+        _live.stringValue = [NSString stringWithFormat:@"%@   ·   Requested %@", name, percentage];
     }
-    if (!lg_should_write(_lastWritten, value)) return;
+    // Keep the music write deadband relative to the selected maximum, so even a
+    // very low cap retains contrast. A changed cap/floor must also apply at once.
+    BOOL shouldWrite = musicEffect && maximum > 0 ?
+        lg_should_write(_lastWritten / maximum, value / maximum) : lg_should_write(_lastWritten, value);
+    if (!shouldWrite && _lastWritten >= minimum && _lastWritten <= maximum) return;
     NSError *error = nil;
     if (![_hardware setLevel:value error:&error]) { [self effectFailed:error.localizedDescription]; return; }
     _lastWritten = value;

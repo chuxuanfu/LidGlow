@@ -1,4 +1,16 @@
-# Distribution and wake-resume verification: 0.2.1
+# Distribution verification
+
+## Current release: 0.2.2 minimum-brightness fix
+
+Music and Auto retain a requested minimum of 1% of the selected maximum, including silence, beat troughs and crossfades. Breathe remains unchanged. Off and a zero maximum still request zero. The 1% floor is a design choice, not a measured physical visibility threshold.
+
+The new production-effect tests reproduce zero output before the fix and pass after it. Coverage includes low/zero maximums, cap changes, all crossfade positions, repeated sound/silence transitions and mode changes. The full existing regression suite, native build, strict signature checks and signal/effect AddressSanitizer/UBSan checks pass. See TEST-RESULTS.md for the local installation and verification details.
+
+Real output-audio testing of the changed ad-hoc build is **not passed**: macOS denied capture authorization after the code signature changed. The app stopped safely and restored the original settings; no privacy permissions were modified. The app was returned to Breathe. The packaged 0.2.2 app has a new version/signature and also requires device-specific native permission validation. Physical logo appearance is not verified.
+
+The 0.2.2 DMG and ZIP were rebuilt after the full test suite. SHA-256 verification, DMG integrity, mounted DMG/ZIP app signatures, matching bundle bytes/version, bundled installer/docs and installer argument checks pass. The full isolated install/upgrade script was not rerun for this release because its global running-app guard requires quitting LidGlow; the active user lighting session was preserved. Installer implementation is unchanged from 0.2.1.
+
+## Historical release: 0.2.1 wake-resume verification
 
 ## Passed locally
 
